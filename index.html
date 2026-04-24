@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UK Side Hustle Tax Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div>
+          <h1>UK Side Hustle Tax Calculator</h1>
+          <p class="subtitle">Enter your income sources and find out what you owe — and how much to save each month</p>
+        </div>
+        <span class="tax-year-badge">2025/26 Tax Year</span>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="container">
+
+      <!-- Input Form -->
+      <section class="card" id="input-card">
+        <h2>Your Income</h2>
+
+        <div class="form-section">
+          <h3 class="section-label">Employment</h3>
+          <div class="field">
+            <label for="salary">Gross Annual Salary</label>
+            <div class="input-wrap">
+              <span class="prefix">£</span>
+              <input type="number" id="salary" placeholder="0" min="0" step="1">
+            </div>
+            <p class="hint">Your total pay before tax and NI is deducted</p>
+          </div>
+        </div>
+
+        <div class="form-section">
+          <h3 class="section-label">Self-Employment</h3>
+          <div class="field-row">
+            <div class="field">
+              <label for="se-income">Gross Income / Turnover</label>
+              <div class="input-wrap">
+                <span class="prefix">£</span>
+                <input type="number" id="se-income" placeholder="0" min="0" step="1">
+              </div>
+            </div>
+            <div class="field">
+              <label for="se-expenses">Allowable Expenses</label>
+              <div class="input-wrap">
+                <span class="prefix">£</span>
+                <input type="number" id="se-expenses" placeholder="0" min="0" step="1">
+              </div>
+            </div>
+          </div>
+          <p class="hint">Expenses = business costs like equipment, software, mileage, subscriptions</p>
+          <div class="profit-preview" id="profit-preview">
+            Taxable profit: <strong id="profit-amount">£0</strong>
+          </div>
+        </div>
+
+        <div class="form-section" id="dividends-section-wrap">
+          <div class="toggle-header">
+            <h3 class="section-label" style="margin-bottom:0">Dividend Income</h3>
+            <label class="toggle" aria-label="Include dividends">
+              <input type="checkbox" id="dividends-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div id="dividends-fields" class="hidden">
+            <div class="field" style="margin-top:1rem">
+              <label for="dividends">Total Dividends Received</label>
+              <div class="input-wrap">
+                <span class="prefix">£</span>
+                <input type="number" id="dividends" placeholder="0" min="0" step="1">
+              </div>
+              <p class="hint">Dividends from UK or overseas companies (gross, before any tax)</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="error-msg" class="error-msg hidden">Please enter at least one income figure.</div>
+        <button class="btn-primary" id="calculate-btn">Calculate My Tax</button>
+      </section>
+
+      <!-- Results -->
+      <section id="results" class="hidden">
+
+        <div class="summary-grid">
+          <div class="summary-card">
+            <span class="summary-label">Total Income</span>
+            <span class="summary-value neutral" id="r-total-income">£0</span>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Total Tax Bill</span>
+            <span class="summary-value blue" id="r-total-tax">£0</span>
+            <span class="summary-sub" id="r-effective-rate"></span>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Self Assessment Due</span>
+            <span class="summary-value amber" id="r-sa-due">£0</span>
+            <span class="summary-sub">due 31 Jan</span>
+          </div>
+          <div class="summary-card highlight-card">
+            <span class="summary-label">Save Each Month</span>
+            <span class="summary-value green" id="r-monthly">£0</span>
+            <span class="summary-sub">to cover your bill</span>
+          </div>
+        </div>
+
+        <div class="save-banner" id="save-banner">
+          <div class="save-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <div>
+            <strong>Set aside <span id="r-monthly-banner">£0</span> per month</strong>
+            <p>to cover your Self Assessment tax bill, due 31 January each year</p>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>Full Breakdown</h2>
+
+          <!-- Income -->
+          <div class="breakdown-section">
+            <h3 class="breakdown-heading">Income &amp; Allowances</h3>
+            <div class="breakdown-row">
+              <span>Employment salary</span>
+              <span id="b-salary">£0</span>
+            </div>
+            <div class="breakdown-row" id="b-se-row">
+              <span>Self-employment profit</span>
+              <span id="b-se-profit">£0</span>
+            </div>
+            <div class="breakdown-row" id="b-div-income-row">
+              <span>Dividend income</span>
+              <span id="b-dividends">£0</span>
+            </div>
+            <div class="breakdown-row subtotal">
+              <span>Total income</span>
+              <span id="b-total-income">£0</span>
+            </div>
+            <div class="breakdown-row deduction">
+              <span>Personal allowance</span>
+              <span id="b-pa">−£12,570</span>
+            </div>
+            <div class="breakdown-row" id="b-div-allowance-row">
+              <span class="muted-text">Dividend allowance</span>
+              <span class="muted-text">−£500</span>
+            </div>
+          </div>
+
+          <!-- PAYE -->
+          <div class="breakdown-section">
+            <h3 class="breakdown-heading">
+              Already Paid via PAYE
+              <span class="pill pill-green">Employer deducted</span>
+            </h3>
+            <div class="breakdown-row">
+              <span>Income tax on salary</span>
+              <span class="text-green" id="b-paye-it">£0</span>
+            </div>
+            <div class="breakdown-row">
+              <span>Employee NI (Class 1)</span>
+              <span class="text-green" id="b-paye-ni">£0</span>
+            </div>
+            <div class="breakdown-row subtotal">
+              <span>Total PAYE paid</span>
+              <span class="text-green" id="b-paye-total">£0</span>
+            </div>
+          </div>
+
+          <!-- Self Assessment -->
+          <div class="breakdown-section">
+            <h3 class="breakdown-heading">
+              Self Assessment Due
+              <span class="pill pill-amber">You owe this</span>
+            </h3>
+            <div class="breakdown-row">
+              <span>Income tax (self-employment)</span>
+              <span class="text-amber" id="b-se-it">£0</span>
+            </div>
+            <div class="breakdown-row">
+              <span>Class 4 NI (self-employment)</span>
+              <span class="text-amber" id="b-class4">£0</span>
+            </div>
+            <div class="breakdown-row" id="b-div-tax-row">
+              <span>Dividend tax</span>
+              <span class="text-amber" id="b-div-tax">£0</span>
+            </div>
+            <div class="breakdown-row subtotal">
+              <span>Total Self Assessment bill</span>
+              <span class="text-amber" id="b-sa-total">£0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card notes-card">
+          <h3>Things to know</h3>
+          <ul>
+            <li><strong>Payment on account:</strong> After your first Self Assessment, HMRC usually splits your bill into advance payments — 50% due 31 January and 50% due 31 July. Budget for this in year two.</li>
+            <li><strong>Trading allowance:</strong> If your self-employment income is under £1,000 you may not need to register or pay tax on it.</li>
+            <li><strong>PAYE estimate:</strong> Assumes a standard 1257L tax code. If HMRC has adjusted your code (e.g. due to benefits or high income), your actual PAYE may differ.</li>
+            <li><strong>Personal allowance taper:</strong> If your total income exceeds £100,000 your personal allowance reduces — the effective tax rate between £100k–£125,140 is 60%.</li>
+            <li><strong>Scotland:</strong> Scottish taxpayers have different income tax rates — this calculator applies England, Wales &amp; Northern Ireland rates only.</li>
+            <li>This is an estimate. Rates shown are for 2025/26. Always verify with HMRC or a qualified accountant.</li>
+          </ul>
+        </div>
+
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>Based on 2025/26 UK tax rates &middot; England, Wales &amp; Northern Ireland only &middot; Not financial advice</p>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
