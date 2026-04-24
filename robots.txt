@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://bbentley-sv.github.io/side-hustle-taxcalculator/sitemap.xml
+Sitemap: https://sidehustletax.uk/sitemap.xml
