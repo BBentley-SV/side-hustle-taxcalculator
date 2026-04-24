@@ -15,7 +15,7 @@
           <h1>UK Side Hustle Tax Calculator</h1>
           <p class="subtitle">Enter your income sources and find out what you owe — and how much to save each month</p>
         </div>
-        <span class="tax-year-badge">2025/26 Tax Year</span>
+        <span class="tax-year-badge" id="header-tax-year">2026/27 Tax Year</span>
       </div>
     </div>
   </header>
@@ -27,43 +27,99 @@
       <section class="card" id="input-card">
         <h2>Your Income</h2>
 
+        <!-- Tax year -->
         <div class="form-section">
-          <h3 class="section-label">Employment</h3>
-          <div class="field">
-            <label for="salary">Gross Annual Salary</label>
-            <div class="input-wrap">
-              <span class="prefix">£</span>
-              <input type="number" id="salary" placeholder="0" min="0" step="1">
-            </div>
-            <p class="hint">Your total pay before tax and NI is deducted</p>
+          <h3 class="section-label">Which tax year are you calculating for?</h3>
+          <div class="select-wrap">
+            <select id="tax-year">
+              <option value="2026/27">2026/27 — current year (ends 5 Apr 2027)</option>
+              <option value="2025/26">2025/26 — Self Assessment due 31 Jan 2027</option>
+              <option value="2024/25">2024/25 — Self Assessment due 31 Jan 2026</option>
+              <option value="2023/24">2023/24 — Self Assessment due 31 Jan 2025</option>
+              <option value="2022/23">2022/23 — Self Assessment due 31 Jan 2024</option>
+            </select>
+            <span class="select-arrow">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+            </span>
           </div>
         </div>
 
+        <!-- Employment -->
         <div class="form-section">
-          <h3 class="section-label">Self-Employment</h3>
+          <h3 class="section-label">Employment</h3>
           <div class="field-row">
             <div class="field">
-              <label for="se-income">Gross Income / Turnover</label>
+              <label for="salary">Gross Annual Salary</label>
               <div class="input-wrap">
                 <span class="prefix">£</span>
-                <input type="number" id="se-income" placeholder="0" min="0" step="1">
+                <input type="number" id="salary" placeholder="0" min="0" step="1">
               </div>
+              <p class="hint">Your total pay before tax and NI</p>
             </div>
             <div class="field">
-              <label for="se-expenses">Allowable Expenses</label>
+              <label for="tax-code">
+                Tax Code
+                <button class="info-btn" data-modal="modal-taxcode" type="button" aria-label="What is a tax code?">?</button>
+              </label>
               <div class="input-wrap">
-                <span class="prefix">£</span>
-                <input type="number" id="se-expenses" placeholder="0" min="0" step="1">
+                <input type="text" id="tax-code" placeholder="e.g. 1257L" maxlength="8" style="padding-left:0.875rem">
               </div>
+              <p class="hint">Leave blank for the standard 1257L code</p>
             </div>
           </div>
-          <p class="hint">Expenses = business costs like equipment, software, mileage, subscriptions</p>
+        </div>
+
+        <!-- Self-Employment -->
+        <div class="form-section">
+          <h3 class="section-label">Self-Employment</h3>
+          <div class="field">
+            <label for="se-income">Gross Income / Turnover</label>
+            <div class="input-wrap">
+              <span class="prefix">£</span>
+              <input type="number" id="se-income" placeholder="0" min="0" step="1">
+            </div>
+            <p class="hint">Total income received before any deductions</p>
+          </div>
+
+          <div class="expense-method-label">
+            How do you want to deduct costs?
+            <button class="info-btn" data-modal="modal-trading" type="button" aria-label="About the trading allowance">?</button>
+          </div>
+          <div class="method-options">
+            <label class="method-card" id="method-actual-card">
+              <input type="radio" name="expense-method" id="method-actual" value="actual" checked>
+              <div class="method-content">
+                <strong>Actual expenses</strong>
+                <span>Deduct my real business costs</span>
+              </div>
+            </label>
+            <label class="method-card" id="method-trading-card">
+              <input type="radio" name="expense-method" id="method-trading" value="trading">
+              <div class="method-content">
+                <strong>£1,000 trading allowance</strong>
+                <span>Simple flat deduction</span>
+              </div>
+            </label>
+          </div>
+
+          <div id="actual-expenses-field" class="field" style="margin-top:0.875rem">
+            <label for="se-expenses">
+              Allowable Expenses
+              <button class="text-link-btn" data-modal="modal-expenses" type="button">What counts? →</button>
+            </label>
+            <div class="input-wrap">
+              <span class="prefix">£</span>
+              <input type="number" id="se-expenses" placeholder="0" min="0" step="1">
+            </div>
+          </div>
+
           <div class="profit-preview" id="profit-preview">
             Taxable profit: <strong id="profit-amount">£0</strong>
           </div>
         </div>
 
-        <div class="form-section" id="dividends-section-wrap">
+        <!-- Dividends -->
+        <div class="form-section">
           <div class="toggle-header">
             <h3 class="section-label" style="margin-bottom:0">Dividend Income</h3>
             <label class="toggle" aria-label="Include dividends">
@@ -78,17 +134,19 @@
                 <span class="prefix">£</span>
                 <input type="number" id="dividends" placeholder="0" min="0" step="1">
               </div>
-              <p class="hint">Dividends from UK or overseas companies (gross, before any tax)</p>
+              <p class="hint">From UK or overseas companies — gross amount before any tax withheld</p>
             </div>
           </div>
         </div>
 
         <div id="error-msg" class="error-msg hidden">Please enter at least one income figure.</div>
-        <button class="btn-primary" id="calculate-btn">Calculate My Tax</button>
+        <button class="btn-primary" id="calculate-btn" type="button">Calculate My Tax</button>
       </section>
 
       <!-- Results -->
       <section id="results" class="hidden">
+
+        <div id="year-note" class="year-note hidden"></div>
 
         <div class="summary-grid">
           <div class="summary-card">
@@ -112,7 +170,7 @@
           </div>
         </div>
 
-        <div class="save-banner" id="save-banner">
+        <div class="save-banner">
           <div class="save-icon">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           </div>
@@ -125,7 +183,6 @@
         <div class="card">
           <h2>Full Breakdown</h2>
 
-          <!-- Income -->
           <div class="breakdown-section">
             <h3 class="breakdown-heading">Income &amp; Allowances</h3>
             <div class="breakdown-row">
@@ -133,7 +190,7 @@
               <span id="b-salary">£0</span>
             </div>
             <div class="breakdown-row" id="b-se-row">
-              <span>Self-employment profit</span>
+              <span id="b-se-method">Self-employment profit</span>
               <span id="b-se-profit">£0</span>
             </div>
             <div class="breakdown-row" id="b-div-income-row">
@@ -148,13 +205,12 @@
               <span>Personal allowance</span>
               <span id="b-pa">−£12,570</span>
             </div>
-            <div class="breakdown-row" id="b-div-allowance-row">
-              <span class="muted-text">Dividend allowance</span>
-              <span class="muted-text">−£500</span>
+            <div class="breakdown-row deduction" id="b-div-allowance-row">
+              <span>Dividend allowance</span>
+              <span id="b-div-allowance-amount">−£500</span>
             </div>
           </div>
 
-          <!-- PAYE -->
           <div class="breakdown-section">
             <h3 class="breakdown-heading">
               Already Paid via PAYE
@@ -174,7 +230,6 @@
             </div>
           </div>
 
-          <!-- Self Assessment -->
           <div class="breakdown-section">
             <h3 class="breakdown-heading">
               Self Assessment Due
@@ -202,12 +257,11 @@
         <div class="card notes-card">
           <h3>Things to know</h3>
           <ul>
-            <li><strong>Payment on account:</strong> After your first Self Assessment, HMRC usually splits your bill into advance payments — 50% due 31 January and 50% due 31 July. Budget for this in year two.</li>
-            <li><strong>Trading allowance:</strong> If your self-employment income is under £1,000 you may not need to register or pay tax on it.</li>
-            <li><strong>PAYE estimate:</strong> Assumes a standard 1257L tax code. If HMRC has adjusted your code (e.g. due to benefits or high income), your actual PAYE may differ.</li>
+            <li><strong>Payment on account:</strong> After your first Self Assessment, HMRC splits the bill into advance payments — 50% due 31 January and 50% due 31 July. Budget for this in year two.</li>
+            <li><strong>PAYE estimate:</strong> Based on your tax code. If HMRC has adjusted it for benefits-in-kind or other income, your actual PAYE figure may differ.</li>
             <li><strong>Personal allowance taper:</strong> If your total income exceeds £100,000 your personal allowance reduces — the effective tax rate between £100k–£125,140 is 60%.</li>
-            <li><strong>Scotland:</strong> Scottish taxpayers have different income tax rates — this calculator applies England, Wales &amp; Northern Ireland rates only.</li>
-            <li>This is an estimate. Rates shown are for 2025/26. Always verify with HMRC or a qualified accountant.</li>
+            <li><strong>Scotland:</strong> Scottish taxpayers have different income tax rates — this calculator covers England, Wales &amp; Northern Ireland only.</li>
+            <li>This is an estimate only. Always verify with HMRC or a qualified accountant.</li>
           </ul>
         </div>
 
@@ -217,9 +271,112 @@
 
   <footer>
     <div class="container">
-      <p>Based on 2025/26 UK tax rates &middot; England, Wales &amp; Northern Ireland only &middot; Not financial advice</p>
+      <p>England, Wales &amp; Northern Ireland rates only &middot; Not financial advice</p>
     </div>
   </footer>
+
+  <!-- ── Modals ──────────────────────────────────────────────────────────── -->
+
+  <!-- Tax code modal -->
+  <div class="modal-overlay hidden" id="modal-taxcode" role="dialog" aria-modal="true" aria-labelledby="modal-taxcode-title">
+    <div class="modal-card">
+      <button class="modal-close" aria-label="Close">&times;</button>
+      <h3 id="modal-taxcode-title">What is a tax code?</h3>
+      <p>Your tax code tells your employer how much of your salary is tax-free. You can find it on your payslip, P60, or in your HMRC Personal Tax Account.</p>
+      <div class="modal-table">
+        <div class="modal-row"><span class="modal-code">1257L</span><span>Standard — £12,570 personal allowance (most people)</span></div>
+        <div class="modal-row"><span class="modal-code">1100L</span><span>Number × 10 = allowance (e.g. 1100L = £11,000)</span></div>
+        <div class="modal-row"><span class="modal-code">BR</span><span>No allowance — all salary taxed at 20% basic rate</span></div>
+        <div class="modal-row"><span class="modal-code">D0</span><span>All salary taxed at 40% higher rate</span></div>
+        <div class="modal-row"><span class="modal-code">D1</span><span>All salary taxed at 45% additional rate</span></div>
+        <div class="modal-row"><span class="modal-code">0T</span><span>No personal allowance, uses normal tax bands</span></div>
+        <div class="modal-row"><span class="modal-code">NT</span><span>No tax deducted at all</span></div>
+        <div class="modal-row"><span class="modal-code">K codes</span><span>Unusual — means deductions exceed your allowances</span></div>
+      </div>
+      <p class="modal-note">If HMRC has adjusted your code (e.g. due to a company car or underpaid tax), the PAYE estimate will reflect that — which may reduce your Self Assessment bill.</p>
+    </div>
+  </div>
+
+  <!-- Trading allowance modal -->
+  <div class="modal-overlay hidden" id="modal-trading" role="dialog" aria-modal="true" aria-labelledby="modal-trading-title">
+    <div class="modal-card">
+      <button class="modal-close" aria-label="Close">&times;</button>
+      <h3 id="modal-trading-title">The £1,000 trading allowance</h3>
+      <p>The trading allowance lets you earn up to <strong>£1,000 from self-employment</strong> without paying any tax or needing to register with HMRC.</p>
+      <p>If your gross income is <strong>over £1,000</strong>, you can still choose to use the allowance — deducting a flat £1,000 instead of totting up your actual expenses.</p>
+      <div class="modal-split">
+        <div class="modal-split-col good">
+          <strong>Use trading allowance when...</strong>
+          <ul>
+            <li>Your actual expenses are less than £1,000</li>
+            <li>You have very few receipts or records</li>
+            <li>You want a simpler calculation</li>
+          </ul>
+        </div>
+        <div class="modal-split-col bad">
+          <strong>Use actual expenses when...</strong>
+          <ul>
+            <li>Your business costs exceed £1,000</li>
+            <li>You have significant equipment or travel costs</li>
+            <li>You work from home and claim a portion of bills</li>
+          </ul>
+        </div>
+      </div>
+      <p class="modal-note">You cannot combine the trading allowance with actual expenses — it's one or the other.</p>
+    </div>
+  </div>
+
+  <!-- Expenses modal -->
+  <div class="modal-overlay hidden" id="modal-expenses" role="dialog" aria-modal="true" aria-labelledby="modal-expenses-title">
+    <div class="modal-card modal-card--wide">
+      <button class="modal-close" aria-label="Close">&times;</button>
+      <h3 id="modal-expenses-title">What are allowable business expenses?</h3>
+      <p>You can deduct costs that are <strong>wholly and exclusively for your business</strong>. Here are the most common ones:</p>
+      <div class="expenses-grid">
+        <div class="expense-item">
+          <strong>Office &amp; workspace</strong>
+          <span>Stationery, postage, printer ink, a portion of home broadband/phone if used for work</span>
+        </div>
+        <div class="expense-item">
+          <strong>Home office</strong>
+          <span>A proportion of electricity, heating, and broadband — based on hours worked or rooms used. HMRC flat rate: £6/week (no receipts needed)</span>
+        </div>
+        <div class="expense-item">
+          <strong>Travel</strong>
+          <span>Business mileage (45p/mile up to 10,000 miles, 25p after), train or bus fares. Not your regular commute</span>
+        </div>
+        <div class="expense-item">
+          <strong>Equipment &amp; tools</strong>
+          <span>Laptops, cameras, tools, phones — if used for work. If used for both, claim the business proportion</span>
+        </div>
+        <div class="expense-item">
+          <strong>Software &amp; subscriptions</strong>
+          <span>Business software, cloud storage, professional memberships, trade magazine subscriptions</span>
+        </div>
+        <div class="expense-item">
+          <strong>Marketing</strong>
+          <span>Website costs, hosting, domain names, advertising, business cards, social media ads</span>
+        </div>
+        <div class="expense-item">
+          <strong>Professional fees</strong>
+          <span>Accountant or bookkeeper fees, legal costs, professional indemnity insurance</span>
+        </div>
+        <div class="expense-item">
+          <strong>Stock &amp; materials</strong>
+          <span>Goods you buy to sell on, or raw materials used to make products</span>
+        </div>
+        <div class="expense-item">
+          <strong>Bank charges</strong>
+          <span>Business bank account fees and transaction charges</span>
+        </div>
+        <div class="expense-item expense-item--no">
+          <strong>You cannot deduct</strong>
+          <span>Personal food or entertainment, everyday clothing, your regular commute, or any personal expenses</span>
+        </div>
+      </div>
+      <p class="modal-note">Keep receipts for everything. HMRC can ask for evidence up to 6 years after the tax year.</p>
+    </div>
+  </div>
 
   <script src="script.js"></script>
 </body>
