@@ -548,6 +548,15 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
 }
 .notes-card li::before { content: '›'; position: absolute; left: 0; color: var(--primary); font-weight: 700; }
 
+/* ── Page title ── */
+.page-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: var(--text);
+  margin: 2rem 0 1rem;
+}
+
 /* ── Intro block ── */
 .intro-block {
   background: var(--card);
