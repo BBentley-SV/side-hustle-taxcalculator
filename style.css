@@ -823,17 +823,28 @@ footer {
 }
 .site-nav {
   display: flex;
-  gap: 1.25rem;
+  gap: .5rem;
 }
 .site-nav a {
-  color: rgba(255,255,255,.75);
+  color: rgba(255,255,255,.8);
   text-decoration: none;
-  font-size: .85rem;
-  font-weight: 500;
-  transition: color .15s;
+  font-size: .8rem;
+  font-weight: 600;
+  padding: .35rem .875rem;
+  border-radius: 100px;
+  border: 1px solid rgba(255,255,255,.25);
+  transition: all .15s;
 }
-.site-nav a:hover,
-.site-nav a.active { color: #fff; }
+.site-nav a:hover {
+  color: #fff;
+  background: rgba(255,255,255,.15);
+  border-color: rgba(255,255,255,.45);
+}
+.site-nav a.active {
+  color: #fff;
+  background: rgba(255,255,255,.2);
+  border-color: rgba(255,255,255,.5);
+}
 .site-title-link { text-decoration: none; color: inherit; }
 .site-logo {
   font-size: 1.25rem;
