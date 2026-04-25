@@ -835,6 +835,23 @@ footer {
 .site-nav a:hover,
 .site-nav a.active { color: #fff; }
 .site-title-link { text-decoration: none; color: inherit; }
+.site-logo {
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: -.02em;
+  color: #fff;
+}
+.intro-guides-link {
+  display: inline-block;
+  margin-top: .875rem;
+  font-size: .85rem;
+  font-weight: 600;
+  color: var(--primary);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: border-color .15s;
+}
+.intro-guides-link:hover { border-color: var(--primary); }
 
 /* ── Article layout ── */
 .article-wrap {
