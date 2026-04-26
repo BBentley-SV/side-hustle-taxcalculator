@@ -248,6 +248,159 @@
           </div>
         </div>
 
+        <!-- Pension Contributions -->
+        <div class="form-section">
+          <div class="toggle-header">
+            <h3 class="section-label" style="margin-bottom:0">Pension Contributions
+              <button class="info-btn" data-modal="modal-pension" type="button" aria-label="About pension contribution types">?</button>
+            </h3>
+            <label class="toggle" aria-label="Include pension contributions">
+              <input type="checkbox" id="pension-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div id="pension-fields" class="hidden">
+
+            <!-- Workplace Pension -->
+            <span class="pension-sub-head">Workplace Pension</span>
+            <p class="hint" style="margin-bottom:.875rem">Salary sacrifice — deducted from gross pay before tax and National Insurance. Not sure about your employer's setup? Select qualifying earnings and check your payslip for your contribution %.</p>
+
+            <div class="field">
+              <label>How are contributions calculated?</label>
+              <div class="method-options">
+                <label class="method-card">
+                  <input type="radio" name="pension-basis" id="pension-basis-qualifying" value="qualifying" checked>
+                  <div class="method-content">
+                    <strong>Qualifying earnings</strong>
+                    <span>Auto-enrolment default: earnings between £6,240–£50,270</span>
+                  </div>
+                </label>
+                <label class="method-card">
+                  <input type="radio" name="pension-basis" id="pension-basis-full" value="full">
+                  <div class="method-content">
+                    <strong>Full salary</strong>
+                    <span>Some employers use total gross pay</span>
+                  </div>
+                </label>
+              </div>
+              <p class="hint" id="pension-qe-display" style="margin-top:.5rem"></p>
+            </div>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="pension-employee-pct">Your contribution</label>
+                <div class="input-wrap">
+                  <input type="number" id="pension-employee-pct" placeholder="5" min="0" max="100" step="0.1" style="padding-left:.875rem">
+                  <span class="suffix">%</span>
+                </div>
+                <p class="hint">Your % from your payslip</p>
+              </div>
+              <div class="field">
+                <label for="pension-employer-pct">Employer contribution</label>
+                <div class="input-wrap">
+                  <input type="number" id="pension-employer-pct" placeholder="3" min="0" max="100" step="0.1" style="padding-left:.875rem">
+                  <span class="suffix">%</span>
+                </div>
+                <p class="hint">Your employer's % (often on payslip)</p>
+              </div>
+            </div>
+
+            <div class="pension-preview" id="workplace-pension-preview" style="display:none">
+              <div class="pension-preview-row">
+                <span>Your contribution</span>
+                <span id="wp-employee-display">—</span>
+              </div>
+              <div class="pension-preview-row">
+                <span>Employer contribution</span>
+                <span id="wp-employer-display">—</span>
+              </div>
+              <div class="pension-preview-row pension-preview-total">
+                <span>Total into workplace pot</span>
+                <span id="wp-total-display">—</span>
+              </div>
+            </div>
+
+            <!-- Personal Pension / SIPP -->
+            <span class="pension-sub-head">Personal Pension / SIPP</span>
+
+            <div class="field-row">
+              <div class="field">
+                <label for="pension-personal-amount">Your contribution</label>
+                <div class="input-wrap">
+                  <span class="prefix">£</span>
+                  <input type="number" id="pension-personal-amount" placeholder="0" min="0" step="1">
+                </div>
+                <p class="hint">The amount you actually pay in (net)</p>
+              </div>
+              <div class="field">
+                <label for="pension-personal-freq">How often</label>
+                <div class="select-wrap">
+                  <select id="pension-personal-freq">
+                    <option value="monthly">per month</option>
+                    <option value="annual">per year</option>
+                    <option value="weekly">per week</option>
+                  </select>
+                  <span class="select-arrow">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div class="pension-preview" id="sipp-preview" style="display:none">
+              <div class="pension-preview-row">
+                <span>Your net payment</span>
+                <span id="sipp-net-display">—</span>
+              </div>
+              <div class="pension-preview-row">
+                <span>Basic rate relief (20%) from provider</span>
+                <span id="sipp-relief-display">—</span>
+              </div>
+              <div class="pension-preview-row pension-preview-total">
+                <span>Total into SIPP</span>
+                <span id="sipp-gross-display">—</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Student Loan -->
+        <div class="form-section">
+          <div class="toggle-header">
+            <h3 class="section-label" style="margin-bottom:0">Student Loan</h3>
+            <label class="toggle" aria-label="Include student loan repayments">
+              <input type="checkbox" id="sl-toggle">
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+          <div id="sl-fields" class="hidden">
+            <div class="field" style="margin-top:1rem">
+              <label for="sl-plan">
+                Repayment Plan
+                <button class="info-btn" data-modal="modal-sl" type="button" aria-label="About student loan plans">?</button>
+              </label>
+              <div class="select-wrap">
+                <select id="sl-plan">
+                  <option value="plan2">Plan 2 — England/Wales, uni from Sept 2012</option>
+                  <option value="plan1">Plan 1 — uni before Sept 2012</option>
+                  <option value="plan5">Plan 5 — England, uni from Aug 2023</option>
+                  <option value="plan4">Plan 4 — studied in Scotland</option>
+                  <option value="pgl">Postgraduate Loan only</option>
+                  <option value="plan1+pgl">Plan 1 + Postgraduate Loan</option>
+                  <option value="plan2+pgl">Plan 2 + Postgraduate Loan</option>
+                  <option value="plan4+pgl">Plan 4 + Postgraduate Loan</option>
+                  <option value="plan5+pgl">Plan 5 + Postgraduate Loan</option>
+                </select>
+                <span class="select-arrow">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+                </span>
+              </div>
+              <p class="hint">Self-employment income is included in the repayment threshold — the portion on your side hustle is collected via Self Assessment</p>
+            </div>
+          </div>
+        </div>
+
         <div id="error-msg" class="error-msg hidden">Please enter at least one income figure.</div>
         <button class="btn-primary" id="calculate-btn" type="button">Calculate My Tax</button>
       </section>
@@ -298,6 +451,10 @@
               <span>Employment salary</span>
               <span id="b-salary">£0</span>
             </div>
+            <div class="breakdown-row deduction" id="b-pension-sacrifice-row" style="display:none">
+              <span>Pension (salary sacrifice)</span>
+              <span id="b-pension-sacrifice-display">−£0</span>
+            </div>
             <div class="breakdown-row" id="b-se-row">
               <span id="b-se-method">Self-employment profit</span>
               <span id="b-se-profit">£0</span>
@@ -333,6 +490,10 @@
               <span>Employee NI (Class 1)</span>
               <span class="text-green" id="b-paye-ni">£0</span>
             </div>
+            <div class="breakdown-row" id="b-sl-paye-row" style="display:none">
+              <span>Student loan (PAYE)</span>
+              <span class="text-green" id="b-sl-paye">£0</span>
+            </div>
             <div class="breakdown-row subtotal">
               <span>Total PAYE paid</span>
               <span class="text-green" id="b-paye-total">£0</span>
@@ -356,9 +517,60 @@
               <span>Dividend tax</span>
               <span class="text-amber" id="b-div-tax">£0</span>
             </div>
+            <div class="breakdown-row" id="b-sl-sa-row" style="display:none">
+              <span>Student loan (Self Assessment)</span>
+              <span class="text-amber" id="b-sl-sa">£0</span>
+            </div>
             <div class="breakdown-row subtotal">
               <span>Total Self Assessment bill</span>
               <span class="text-amber" id="b-sa-total">£0</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" id="pension-summary-card" style="display:none">
+          <h2>Pension Contributions</h2>
+
+          <div id="ps-workplace-section">
+            <div class="breakdown-section">
+              <h3 class="breakdown-heading">Workplace pension <span class="pill pill-green">Salary sacrifice</span></h3>
+              <div class="breakdown-row">
+                <span>Your contribution</span>
+                <span id="ps-employee">—</span>
+              </div>
+              <div class="breakdown-row">
+                <span>Employer contribution</span>
+                <span id="ps-employer">—</span>
+              </div>
+              <div class="breakdown-row subtotal">
+                <span>Total into workplace pot</span>
+                <span id="ps-wp-total">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div id="ps-sipp-section">
+            <div class="breakdown-section">
+              <h3 class="breakdown-heading">Personal pension / SIPP <span class="pill pill-green">Tax relief applied</span></h3>
+              <div class="breakdown-row">
+                <span>Your net payment</span>
+                <span id="ps-sipp-net">—</span>
+              </div>
+              <div class="breakdown-row deduction">
+                <span>Basic rate relief (20%)</span>
+                <span id="ps-sipp-relief">—</span>
+              </div>
+              <div class="breakdown-row subtotal">
+                <span>Total into SIPP</span>
+                <span id="ps-sipp-total">—</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="breakdown-section" id="ps-all-section" style="display:none">
+            <div class="breakdown-row subtotal">
+              <span>All pensions combined</span>
+              <span id="ps-all-total">—</span>
             </div>
           </div>
         </div>
@@ -572,6 +784,51 @@
         </div>
       </div>
       <p class="modal-note">Keep receipts for everything. HMRC can ask for evidence up to 6 years after the tax year.</p>
+    </div>
+  </div>
+
+  <!-- Pension modal -->
+  <div class="modal-overlay hidden" id="modal-pension" role="dialog" aria-modal="true" aria-labelledby="modal-pension-title">
+    <div class="modal-card">
+      <button class="modal-close" aria-label="Close">&times;</button>
+      <h3 id="modal-pension-title">Pension contributions and tax relief</h3>
+      <p>Pension contributions reduce your tax bill in different ways depending on how you contribute.</p>
+      <div class="modal-split">
+        <div class="modal-split-col good">
+          <strong>Salary sacrifice</strong>
+          <ul>
+            <li>Money goes in before tax and NI are calculated</li>
+            <li>Reduces your gross salary — both income tax and employee NI are lower</li>
+            <li>Set up through your employer — check your payslip</li>
+          </ul>
+        </div>
+        <div class="modal-split-col bad">
+          <strong>Personal / SIPP</strong>
+          <ul>
+            <li>You pay from net income; your provider adds 20% basic rate relief</li>
+            <li>Higher/additional rate taxpayers claim extra relief through Self Assessment</li>
+            <li>No NI saving — you pay NI on your full salary</li>
+          </ul>
+        </div>
+      </div>
+      <p class="modal-note">You can enter both. For your workplace pension, enter your employee contribution percentage — most payslips show this as a % of salary. For a personal/SIPP, enter the gross amount (your net payment ÷ 0.8, e.g. pay £8,000 → gross £10,000).</p>
+    </div>
+  </div>
+
+  <!-- Student loan modal -->
+  <div class="modal-overlay hidden" id="modal-sl" role="dialog" aria-modal="true" aria-labelledby="modal-sl-title">
+    <div class="modal-card">
+      <button class="modal-close" aria-label="Close">&times;</button>
+      <h3 id="modal-sl-title">Student loan repayment plans</h3>
+      <p>You repay 9% (or 6% for Postgraduate) of your income above the threshold. Your employer deducts repayments on your salary via PAYE; repayments on self-employment income are calculated and collected through Self Assessment.</p>
+      <div class="modal-table">
+        <div class="modal-row"><span class="modal-code">Plan 1</span><span>Started uni before Sept 2012. Threshold rises with RPI each year.</span></div>
+        <div class="modal-row"><span class="modal-code">Plan 2</span><span>Started uni Sept 2012–Aug 2023 in England/Wales. Most common plan.</span></div>
+        <div class="modal-row"><span class="modal-code">Plan 4</span><span>Studied in Scotland. Higher threshold than Plans 1 and 2.</span></div>
+        <div class="modal-row"><span class="modal-code">Plan 5</span><span>Started uni from Aug 2023 in England. Repayments begin April 2026.</span></div>
+        <div class="modal-row"><span class="modal-code">PGL</span><span>Postgraduate Loan: 6% above £21,000. Often held alongside an undergraduate plan.</span></div>
+      </div>
+      <p class="modal-note">Not sure which plan you're on? Check your payslip or log in at studentloanrepayment.co.uk.</p>
     </div>
   </div>
 

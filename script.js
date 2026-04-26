@@ -6,7 +6,10 @@ const TAX_YEARS = {
     empNI: { lower: 12570, upper: 50270, basic: 0.08, higher: 0.02 },
     c4NI:  { lower: 12570, upper: 50270, basic: 0.06, higher: 0.02 },
     div: { allowance: 500,  basic: 0.0875, higher: 0.3375, additional: 0.3935 },
-    note: 'Rates for 2026/27 are based on the confirmed freeze through 2028. Verify with HMRC if any changes were announced after August 2025.',
+    sl:  { plan1: { threshold: 26600, rate: 0.09 }, plan2: { threshold: 28470, rate: 0.09 },
+           plan4: { threshold: 33500, rate: 0.09 }, plan5: { threshold: 25000, rate: 0.09 },
+           pgl:   { threshold: 21000, rate: 0.06 } },
+    note: 'Rates for 2026/27 are based on the confirmed freeze through 2028. Student loan thresholds are estimated — verify with HMRC if any changes were announced after August 2025.',
   },
   '2025/26': {
     pa: 12570, basicRateLimit: 50270, higherRateLimit: 125140, paTaperStart: 100000,
@@ -14,6 +17,9 @@ const TAX_YEARS = {
     empNI: { lower: 12570, upper: 50270, basic: 0.08, higher: 0.02 },
     c4NI:  { lower: 12570, upper: 50270, basic: 0.06, higher: 0.02 },
     div: { allowance: 500,  basic: 0.0875, higher: 0.3375, additional: 0.3935 },
+    sl:  { plan1: { threshold: 26065, rate: 0.09 }, plan2: { threshold: 28470, rate: 0.09 },
+           plan4: { threshold: 32745, rate: 0.09 }, plan5: { threshold: 25000, rate: 0.09 },
+           pgl:   { threshold: 21000, rate: 0.06 } },
   },
   '2024/25': {
     pa: 12570, basicRateLimit: 50270, higherRateLimit: 125140, paTaperStart: 100000,
@@ -21,6 +27,9 @@ const TAX_YEARS = {
     empNI: { lower: 12570, upper: 50270, basic: 0.08, higher: 0.02 },
     c4NI:  { lower: 12570, upper: 50270, basic: 0.06, higher: 0.02 },
     div: { allowance: 500,  basic: 0.0875, higher: 0.3375, additional: 0.3935 },
+    sl:  { plan1: { threshold: 24990, rate: 0.09 }, plan2: { threshold: 27295, rate: 0.09 },
+           plan4: { threshold: 31395, rate: 0.09 }, plan5: { threshold: 25000, rate: 0.09 },
+           pgl:   { threshold: 21000, rate: 0.06 } },
   },
   '2023/24': {
     pa: 12570, basicRateLimit: 50270, higherRateLimit: 125140, paTaperStart: 100000,
@@ -28,6 +37,9 @@ const TAX_YEARS = {
     empNI: { lower: 12570, upper: 50270, basic: 0.12, higher: 0.02 },
     c4NI:  { lower: 12570, upper: 50270, basic: 0.09, higher: 0.02 },
     div: { allowance: 1000, basic: 0.0875, higher: 0.3375, additional: 0.3935 },
+    sl:  { plan1: { threshold: 22015, rate: 0.09 }, plan2: { threshold: 27295, rate: 0.09 },
+           plan4: { threshold: 27660, rate: 0.09 },
+           pgl:   { threshold: 21000, rate: 0.06 } },
     note: 'NI rates were cut mid-year (6 Jan 2024): employee NI 12%→10%, Class 4 9%→8%. This estimate uses the rates that applied for most of the year.',
   },
   '2022/23': {
@@ -36,6 +48,9 @@ const TAX_YEARS = {
     empNI: { lower: 12570, upper: 50270, basic: 0.12, higher: 0.02 },
     c4NI:  { lower: 12570, upper: 50270, basic: 0.09, higher: 0.02 },
     div: { allowance: 2000, basic: 0.0875, higher: 0.3375, additional: 0.3935 },
+    sl:  { plan1: { threshold: 20195, rate: 0.09 }, plan2: { threshold: 27295, rate: 0.09 },
+           plan4: { threshold: 25375, rate: 0.09 },
+           pgl:   { threshold: 21000, rate: 0.06 } },
     note: 'NI rates were temporarily higher Apr–Nov 2022 (Health & Social Care Levy). This estimate uses the main-year rates of 12% / 9%.',
   },
 };
@@ -123,38 +138,70 @@ function calcPayeIT(salary, taxCodeStr, T) {
   return calcIncomeTax(Math.max(0, salary - pa), T);
 }
 
+// ── Student loan ─────────────────────────────────────────────────────────────
+
+function calcStudentLoan(salary, seProfit, slPlan, T) {
+  if (!slPlan) return { total: 0, paye: 0, sa: 0 };
+  let total = 0, paye = 0;
+  for (const plan of slPlan.split('+')) {
+    const cfg = T.sl?.[plan];
+    if (!cfg) continue;
+    total += Math.max(0, salary + seProfit - cfg.threshold) * cfg.rate;
+    paye  += Math.max(0, salary - cfg.threshold) * cfg.rate;
+  }
+  return { total, paye, sa: Math.max(0, total - paye) };
+}
+
 // ── Main calculation ─────────────────────────────────────────────────────────
 
-function calculate(salary, seIncome, useTrading, seExpenses, dividends, taxCodeStr) {
+// pension = { sacrifice: number, personal: number }
+function calculate(salary, seIncome, useTrading, seExpenses, dividends, taxCodeStr, pension, slPlan) {
   const T = getT();
   const TRADING_ALLOWANCE = 1000;
   const seProfit = useTrading
     ? Math.max(0, seIncome - TRADING_ALLOWANCE)
     : Math.max(0, seIncome - seExpenses);
 
-  const totalNonSavings = salary + seProfit;
+  const sacrificeAmount = pension?.sacrifice || 0;
+  const personalAmount  = pension?.personal  || 0;
+
+  // Salary sacrifice reduces effective salary for all tax and NI calculations
+  const effectiveSalary = Math.max(0, salary - sacrificeAmount);
+
+  // Personal/SIPP: extend the basic rate band; also use adjusted net income for PA taper
+  const itT = personalAmount > 0
+    ? { ...T, basicRateLimit: T.basicRateLimit + personalAmount }
+    : T;
+  const adjustedNetIncome = Math.max(0, effectiveSalary + seProfit + dividends - personalAmount);
+
+  const totalNonSavings = effectiveSalary + seProfit;
   const totalIncome     = totalNonSavings + dividends;
-  const pa              = getPA(totalIncome, T);
+  const pa              = getPA(adjustedNetIncome, T);
 
   const taxableNonSavings = Math.max(0, totalNonSavings - pa);
-  const totalNonSavingsIT = calcIncomeTax(taxableNonSavings, T);
+  const totalNonSavingsIT = calcIncomeTax(taxableNonSavings, itT);
 
-  const payeIT = calcPayeIT(salary, taxCodeStr, T);
-  const payeNI = calcEmployeeNI(salary, T);
+  const payeIT = calcPayeIT(effectiveSalary, taxCodeStr, T);
+  const payeNI = calcEmployeeNI(effectiveSalary, T);
 
   const seIT   = Math.max(0, totalNonSavingsIT - payeIT);
   const c4NI   = calcClass4NI(seProfit, T);
-  const divTax = calcDividendTax(dividends, totalNonSavings, pa, T);
+  const divTax = calcDividendTax(dividends, totalNonSavings, pa, itT);
 
-  const totalPAYE = payeIT + payeNI;
-  const saDue     = seIT + c4NI + divTax;
-  const totalTax  = totalNonSavingsIT + divTax + payeNI + c4NI;
+  const sl = calcStudentLoan(effectiveSalary, seProfit, slPlan, T);
+
+  const totalPAYE = payeIT + payeNI + sl.paye;
+  const saDue     = seIT + c4NI + divTax + sl.sa;
+  const totalTax  = totalNonSavingsIT + divTax + payeNI + c4NI + sl.total;
 
   return {
-    salary, seProfit, dividends, useTrading,
+    salary, effectiveSalary, seProfit, dividends, useTrading,
+    sacrificeAmount, personalAmount,
+    pensionDetails: pension || null,
     totalNonSavings, totalIncome, pa,
     payeIT, payeNI, totalPAYE,
     seIT, c4NI, divTax,
+    slPaye: sl.paye, slSa: sl.sa, slTotal: sl.total, hasSl: sl.total > 0,
     totalTax, saDue,
     monthly:       saDue / 12,
     effectiveRate: totalIncome > 0 ? (totalTax / totalIncome) * 100 : 0,
@@ -170,6 +217,70 @@ const fmt = n => '£' + Math.round(n).toLocaleString('en-GB');
 function setEl(id, val) {
   const el = document.getElementById(id);
   if (el) el.textContent = val;
+}
+
+// ── Pension helpers ───────────────────────────────────────────────────────────
+
+const QUALIFYING_LOWER = 6240;
+
+function getWorkplacePensionAmounts() {
+  const salary      = parseFloat(document.getElementById('salary').value) || 0;
+  const basis       = document.querySelector('input[name="pension-basis"]:checked')?.value || 'qualifying';
+  const employeePct = parseFloat(document.getElementById('pension-employee-pct').value) || 0;
+  const employerPct = parseFloat(document.getElementById('pension-employer-pct').value) || 0;
+  const T           = getT();
+  const base = basis === 'qualifying'
+    ? Math.max(0, Math.min(salary, T.basicRateLimit) - QUALIFYING_LOWER)
+    : salary;
+  return {
+    base,
+    employeeAnnual: Math.round(base * employeePct / 100),
+    employerAnnual: Math.round(base * employerPct / 100),
+  };
+}
+
+function getSippAmounts() {
+  const amount = parseFloat(document.getElementById('pension-personal-amount').value) || 0;
+  const freq   = document.getElementById('pension-personal-freq').value;
+  const mult   = freq === 'weekly' ? 52 : freq === 'monthly' ? 12 : 1;
+  const netAnnual   = Math.round(amount * mult);
+  const grossAnnual = Math.round(netAnnual / 0.8);
+  return { netAnnual, grossAnnual, reliefAnnual: grossAnnual - netAnnual };
+}
+
+function fmtMoYr(annual) {
+  return `${fmt(Math.round(annual / 12))}/mo · ${fmt(annual)}/yr`;
+}
+
+function updateWorkplacePensionPreview() {
+  const salary  = parseFloat(document.getElementById('salary').value) || 0;
+  const basis   = document.querySelector('input[name="pension-basis"]:checked')?.value || 'qualifying';
+  const { base, employeeAnnual, employerAnnual } = getWorkplacePensionAmounts();
+
+  const qeEl = document.getElementById('pension-qe-display');
+  if (qeEl) qeEl.textContent = basis === 'qualifying' && salary > 0 ? `Qualifying earnings: ${fmt(base)}/year` : '';
+
+  const preview = document.getElementById('workplace-pension-preview');
+  if (!preview) return;
+  const hasData = (employeeAnnual > 0 || employerAnnual > 0) && salary > 0;
+  preview.style.display = hasData ? '' : 'none';
+  if (hasData) {
+    setEl('wp-employee-display', fmtMoYr(employeeAnnual));
+    setEl('wp-employer-display', fmtMoYr(employerAnnual));
+    setEl('wp-total-display',    fmtMoYr(employeeAnnual + employerAnnual));
+  }
+}
+
+function updateSippPreview() {
+  const { netAnnual, grossAnnual, reliefAnnual } = getSippAmounts();
+  const preview = document.getElementById('sipp-preview');
+  if (!preview) return;
+  preview.style.display = netAnnual > 0 ? '' : 'none';
+  if (netAnnual > 0) {
+    setEl('sipp-net-display',    fmtMoYr(netAnnual));
+    setEl('sipp-relief-display', fmtMoYr(reliefAnnual));
+    setEl('sipp-gross-display',  fmtMoYr(grossAnnual));
+  }
 }
 
 // ── Profit preview ───────────────────────────────────────────────────────────
@@ -228,6 +339,60 @@ function renderResults(r) {
   document.getElementById('b-div-income-row').style.display    = hasDivs ? '' : 'none';
   document.getElementById('b-div-allowance-row').style.display = hasDivs ? '' : 'none';
   document.getElementById('b-div-tax-row').style.display       = hasDivs ? '' : 'none';
+
+  // Salary sacrifice: shown as a deduction in the income breakdown
+  const sacrificeRow = document.getElementById('b-pension-sacrifice-row');
+  if (r.sacrificeAmount > 0) {
+    sacrificeRow.style.display = '';
+    setEl('b-pension-sacrifice-display', '−' + fmt(r.sacrificeAmount));
+  } else {
+    sacrificeRow.style.display = 'none';
+  }
+
+  // Pension summary card
+  const pd           = r.pensionDetails;
+  const hasWorkplace = pd && (pd.sacrifice > 0 || pd.employerAnnual > 0);
+  const hasSipp      = pd && pd.sippNetAnnual > 0;
+  const summaryCard  = document.getElementById('pension-summary-card');
+  if (summaryCard) {
+    summaryCard.style.display = (hasWorkplace || hasSipp) ? '' : 'none';
+
+    const wpSection = document.getElementById('ps-workplace-section');
+    if (wpSection) {
+      wpSection.style.display = hasWorkplace ? '' : 'none';
+      if (hasWorkplace) {
+        setEl('ps-employee', fmtMoYr(pd.sacrifice || 0));
+        setEl('ps-employer', fmtMoYr(pd.employerAnnual || 0));
+        setEl('ps-wp-total', fmtMoYr((pd.sacrifice || 0) + (pd.employerAnnual || 0)));
+      }
+    }
+
+    const sippSection = document.getElementById('ps-sipp-section');
+    if (sippSection) {
+      sippSection.style.display = hasSipp ? '' : 'none';
+      if (hasSipp) {
+        setEl('ps-sipp-net',    fmtMoYr(pd.sippNetAnnual));
+        setEl('ps-sipp-relief', fmtMoYr(r.personalAmount - pd.sippNetAnnual));
+        setEl('ps-sipp-total',  fmtMoYr(r.personalAmount));
+      }
+    }
+
+    const allSection = document.getElementById('ps-all-section');
+    if (allSection) {
+      allSection.style.display = (hasWorkplace && hasSipp) ? '' : 'none';
+      if (hasWorkplace && hasSipp) {
+        setEl('ps-all-total', fmtMoYr((pd.sacrifice || 0) + (pd.employerAnnual || 0) + r.personalAmount));
+      }
+    }
+  }
+
+  // Student loan rows
+  document.getElementById('b-sl-paye-row').style.display = r.hasSl ? '' : 'none';
+  document.getElementById('b-sl-sa-row').style.display   = r.hasSl ? '' : 'none';
+  if (r.hasSl) {
+    setEl('b-sl-paye', fmt(r.slPaye));
+    setEl('b-sl-sa',   fmt(r.slSa));
+  }
 
   // Year note
   const noteEl = document.getElementById('year-note');
@@ -291,8 +456,25 @@ document.getElementById('tax-year').addEventListener('change', function () {
 document.getElementById('se-income').addEventListener('input', updateProfitPreview);
 document.getElementById('se-expenses').addEventListener('input', updateProfitPreview);
 
+['salary', 'pension-employee-pct', 'pension-employer-pct'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', updateWorkplacePensionPreview);
+});
+document.querySelectorAll('input[name="pension-basis"]').forEach(r => {
+  r.addEventListener('change', updateWorkplacePensionPreview);
+});
+document.getElementById('pension-personal-amount').addEventListener('input', updateSippPreview);
+document.getElementById('pension-personal-freq').addEventListener('change', updateSippPreview);
+
 document.getElementById('dividends-toggle').addEventListener('change', function () {
   document.getElementById('dividends-fields').classList.toggle('hidden', !this.checked);
+});
+
+document.getElementById('pension-toggle').addEventListener('change', function () {
+  document.getElementById('pension-fields').classList.toggle('hidden', !this.checked);
+});
+
+document.getElementById('sl-toggle').addEventListener('change', function () {
+  document.getElementById('sl-fields').classList.toggle('hidden', !this.checked);
 });
 
 document.getElementById('calculate-btn').addEventListener('click', () => {
@@ -304,6 +486,22 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
     ? (parseFloat(document.getElementById('dividends').value) || 0) : 0;
   const taxCode    = document.getElementById('tax-code').value.trim();
 
+  const pensionEnabled = document.getElementById('pension-toggle').checked;
+  let pension = null;
+  if (pensionEnabled) {
+    const { employeeAnnual, employerAnnual } = getWorkplacePensionAmounts();
+    const { netAnnual, grossAnnual }         = getSippAmounts();
+    pension = {
+      sacrifice:      employeeAnnual,
+      personal:       grossAnnual,
+      employerAnnual: employerAnnual,
+      sippNetAnnual:  netAnnual,
+    };
+  }
+
+  const slEnabled = document.getElementById('sl-toggle').checked;
+  const slPlan    = slEnabled ? document.getElementById('sl-plan').value : null;
+
   const errorEl = document.getElementById('error-msg');
   if (salary === 0 && seIncome === 0 && dividends === 0) {
     errorEl.classList.remove('hidden');
@@ -311,7 +509,7 @@ document.getElementById('calculate-btn').addEventListener('click', () => {
   }
   errorEl.classList.add('hidden');
 
-  renderResults(calculate(salary, seIncome, useTrading, seExpenses, dividends, taxCode));
+  renderResults(calculate(salary, seIncome, useTrading, seExpenses, dividends, taxCode, pension, slPlan));
 });
 
 ['salary', 'se-income', 'dividends'].forEach(id => {

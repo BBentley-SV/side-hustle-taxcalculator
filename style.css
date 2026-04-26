@@ -161,6 +161,52 @@ label {
   flex-shrink: 0;
 }
 
+.suffix {
+  background: #f8fafc;
+  border-left: 1.5px solid var(--border);
+  padding: .65rem .8rem;
+  font-weight: 700;
+  color: var(--muted);
+  font-size: .9rem;
+  line-height: 1;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+/* ── Pension sub-sections ── */
+.pension-sub-head {
+  display: block;
+  font-size: .72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--muted);
+  margin: 1.5rem 0 .75rem;
+}
+.pension-sub-head:first-child { margin-top: 1rem; }
+
+.pension-preview {
+  background: var(--primary-light);
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: .625rem .875rem;
+  margin-top: .75rem;
+}
+.pension-preview-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: .82rem;
+  color: var(--primary);
+  padding: .2rem 0;
+}
+.pension-preview-total {
+  font-weight: 700;
+  border-top: 1px solid #bfdbfe;
+  margin-top: .25rem;
+  padding-top: .35rem;
+}
+
 input[type="number"],
 input[type="text"] {
   flex: 1;
@@ -617,6 +663,7 @@ input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: .75rem;
+  align-items: start;
 }
 .faq-item {
   border: 1.5px solid var(--border);
