@@ -462,8 +462,8 @@ document.getElementById('se-expenses').addEventListener('input', updateProfitPre
 document.querySelectorAll('input[name="pension-basis"]').forEach(r => {
   r.addEventListener('change', updateWorkplacePensionPreview);
 });
-document.getElementById('pension-personal-amount').addEventListener('input', updateSippPreview);
-document.getElementById('pension-personal-freq').addEventListener('change', updateSippPreview);
+document.getElementById('pension-personal-amount')?.addEventListener('input', updateSippPreview);
+document.getElementById('pension-personal-freq')?.addEventListener('change', updateSippPreview);
 
 document.getElementById('dividends-toggle').addEventListener('change', function () {
   document.getElementById('dividends-fields').classList.toggle('hidden', !this.checked);
